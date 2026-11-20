@@ -1,4 +1,4 @@
-// Open an sgit vault in the browser: a vault zip (sgit vault backup) and a read key.
+// Open an sgit vault in the browser: a vault zip (sgit vault backup) or a vault published as objects, and a read key.
 // The key comes from the link after the #, a QR code or a paste; it never leaves this page.
 // Decrypts with WebCrypto (AES-256-GCM, the sgit envelope), keeps the files on this device
 // (IndexedDB), and shows the site in a sandboxed frame that cannot reach the network.
@@ -10,6 +10,12 @@ const $ = (s) => document.querySelector(s);
 const HERE = typeof document !== 'undefined' && document.currentScript ? new URL('.', document.currentScript.src) : null;
 // A gated site: <html data-vault-zip="private/<id>.zip"> fixes the vault, so its link and QR code carry only the key.
 const GATE_ZIP = typeof document !== 'undefined' ? document.documentElement.dataset.vaultZip || null : null;
+// Or a vault published as objects (sgit.ai static hosting): <html data-vault-static="vault/" data-vault-id="<id>">.
+// The browser then fetches only the objects it needs, keeps the immutable ones (ciphertext) in IndexedDB,
+// and asks again only for the branch index and refs, which are the vault's only mutable files.
+const GATE_STATIC = typeof document !== 'undefined' ? document.documentElement.dataset.vaultStatic || null : null;
+const GATE_VAULT = typeof document !== 'undefined' ? document.documentElement.dataset.vaultId || null : null;
+const GATE_SRC = GATE_STATIC ? 'static:' + GATE_STATIC : GATE_ZIP;
 const enc = new TextEncoder(), dec = new TextDecoder();
 const DEFLATE_MAGIC = [0x00, 0x73, 0x67, 0x7a, 0x31]; // "\0sgz1": iv + AES-GCM(deflate(plaintext))
 
@@ -100,6 +106,75 @@ async function openVault(zipBuf, keyHex) {
   await walk(head.tree_id, '');
   const message = await meta(head.message_enc).catch(() => null);
   return { vaultId: manifest.vault_id || 'vault', commit: head, message, files };
+}
+
+// ---------- a vault published as objects ----------
+const OBJ_ID = /^obj-cas-imm-[0-9a-f]{12,64}$/, REF_ID = /^ref-pid-[a-z]{3}-[0-9a-f]{12}$/;
+async function openStatic(base, vaultId, keyHex) {
+  if (!/^[a-z0-9]{4,24}$/.test(vaultId || '')) throw new Error('This page does not name its vault.');
+  const decrypt = await decryptor(keyHex);
+  const mac = await crypto.subtle.importKey('raw', hexBytes(keyHex), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const fileId = async (domain) => [...new Uint8Array(await crypto.subtle.sign('HMAC', mac, enc.encode(domain)))].map((x) => x.toString(16).padStart(2, '0')).join('').slice(0, 12);
+  const get = async (path, fresh) => {
+    const r = await fetch(base + 'bare/' + path, { credentials: 'omit', cache: fresh ? 'no-store' : 'default' });
+    if (!r.ok) { const e = new Error('Could not fetch part of the vault (' + r.status + ').'); e.status = r.status; throw e; }
+    return new Uint8Array(await r.arrayBuffer());
+  };
+  const obj = async (id) => {
+    if (!OBJ_ID.test(id || '')) throw new Error('The vault names an object it should not.');
+    let ct = await tx('objects', 'readonly', (st) => st.get(id)).catch(() => null);
+    if (!ct) { ct = await get('data/' + id, false); tx('objects', 'readwrite', (st) => st.put(ct, id)).catch(() => null); }
+    return decrypt(ct);
+  };
+  const json = async (id) => JSON.parse(dec.decode(await obj(id)));
+  let index;
+  try { index = JSON.parse(dec.decode(await decrypt(await get('indexes/idx-pid-muw-' + await fileId('sg-vault-v1:file-id:branch-index:' + vaultId), true)))); }
+  catch (err) { throw new Error(err.status && err.status !== 404 ? err.message : 'This key does not open this vault.'); }
+  // The newest commit any branch ref points to (named and clone branches alike), as for a zip.
+  let head = null;
+  for (const br of index.branches || []) {
+    if (!REF_ID.test(br.head_ref_id || '')) continue;
+    let ref; try { ref = JSON.parse(dec.decode(await decrypt(await get('refs/' + br.head_ref_id, true)))); } catch (_) { continue; }
+    if (!ref.commit_id) continue;
+    const c = await json(ref.commit_id);
+    if (!head || c.timestamp_ms > head.timestamp_ms) head = c;
+  }
+  if (!head) throw new Error('The vault has no commits.');
+  const files = new Map();
+  const meta = async (s) => (s ? dec.decode(await decrypt(b64(s))) : null);
+  async function walk(treeId, prefix) {
+    const t = await json(treeId);
+    for (const en of t.entries || []) {
+      const name = await meta(en.name_enc);
+      if (!name || name.includes('/') || name === '..' || name === '.') continue;
+      if (en.tree_id) await walk(en.tree_id, prefix + name + '/');
+      else if (en.blob_id && !en.large) { const id = en.blob_id; files.set(prefix + name, { bytes: null, type: await meta(en.content_type_enc), load: () => obj(id) }); }
+    }
+  }
+  await walk(head.tree_id, '');
+  const message = await meta(head.message_enc).catch(() => null);
+  return { vaultId, commit: head, message, files };
+}
+// Files of a published vault arrive when a page needs them: the page, then the styles, scripts and images it uses.
+async function need(files, p) { const f = files.get(p); if (f && !f.bytes && f.load) f.bytes = await f.load(); return f; }
+function refsIn(from, text, css) {
+  const out = new Set(), add = (u) => { const r = resolve(from, u); if (r) out.add(r); };
+  for (const m of text.matchAll(/url\(\s*(['"]?)([^'")]+)\1\s*\)/g)) add(m[2]);
+  if (!css) for (const m of text.matchAll(/\s(?:src|href|poster)\s*=\s*["']([^"']+)["']/gi)) add(m[1]);
+  return out;
+}
+async function ensure(files, path, seen = new Set()) {
+  if (seen.has(path)) return; seen.add(path);
+  const f = await need(files, path);
+  if (!f || !/\.(html?|css)$/i.test(path)) return;
+  const deps = [...refsIn(path, dec.decode(f.bytes), /\.css$/i.test(path))].filter((p) => files.has(p) && !/\.(html?|pdf)$/i.test(p));
+  await Promise.all(deps.map((p) => (/\.css$/i.test(p) ? ensure(files, p, seen) : need(files, p))));
+}
+async function named(v) {
+  const first = (pages(v.files)[0] || {}).path;
+  if (first) await ensure(v.files, first);
+  if (v.files.has('README.md')) await need(v.files, 'README.md');
+  return titleOf(v.files, first);
 }
 
 // ---------- the site inside ----------
@@ -201,12 +276,13 @@ const SCOPE = typeof location !== 'undefined' ? location.pathname : '/';
 const FLAG = 'sv-saved:' + SCOPE; // a plain "something is saved here" flag, so the opening screen shows at once
 function db() {
   return new Promise((ok, no) => {
-    const r = indexedDB.open('sovereign-vault', 2);
+    const r = indexedDB.open('sovereign-vault', 3);
     r.onupgradeneeded = () => {
       const d = r.result;
       if (d.objectStoreNames.contains('vaults')) d.deleteObjectStore('vaults'); // version 1 kept decrypted files
       if (!d.objectStoreNames.contains('keypair')) d.createObjectStore('keypair');
       if (!d.objectStoreNames.contains('saved')) d.createObjectStore('saved', { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('objects')) d.createObjectStore('objects'); // ciphertext only, keyed by its immutable id
     };
     r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error);
   });
@@ -239,7 +315,7 @@ const getSaved = (id) => tx('saved', 'readonly', (s) => s.get(id)).catch(() => n
 const listSaved = () => tx('saved', 'readonly', (s) => s.getAll()).then((all) => all.filter((r) => r.scope === SCOPE)).catch(() => []);
 async function forget(id) {
   await tx('saved', 'readwrite', (s) => s.delete(id)).catch(() => null);
-  if (!(await listSaved()).length) { await tx('keypair', 'readwrite', (s) => s.delete(SCOPE)).catch(() => null); flag(false); }
+  if (!(await listSaved()).length) { await tx('keypair', 'readwrite', (s) => s.delete(SCOPE)).catch(() => null); await tx('objects', 'readwrite', (s) => s.clear()).catch(() => null); flag(false); }
 }
 async function openSaved(rec) {
   loading(true); status('Opening the vault saved on this device...');
@@ -247,10 +323,14 @@ async function openSaved(rec) {
     const pair = await keyPair(false);
     if (!pair) throw new Error('The saved key is gone from this browser.');
     const keyHex = dec.decode(await crypto.subtle.decrypt({ name: 'RSA-OAEP' }, pair.privateKey, rec.ct));
-    let buf = rec.zipBytes;
-    if (rec.zip) { const r = await fetch(rec.zip, { credentials: 'omit' }); if (!r.ok) throw new Error('Could not fetch ' + rec.zip); buf = await r.arrayBuffer(); }
-    const v = await openVault(buf, keyHex);
-    v.name = titleOf(v.files, (pages(v.files)[0] || {}).path); v.savedId = rec.id;
+    let v;
+    if (rec.zip && rec.zip.startsWith('static:')) v = await openStatic(rec.zip.slice(7), rec.vaultId, keyHex);
+    else {
+      let buf = rec.zipBytes;
+      if (rec.zip) { const r = await fetch(rec.zip, { credentials: 'omit' }); if (!r.ok) throw new Error('Could not fetch ' + rec.zip); buf = await r.arrayBuffer(); }
+      v = await openVault(buf, keyHex);
+    }
+    v.name = await named(v); v.savedId = rec.id;
     status(`Opened ${v.name} with the key saved on this device.`);
     show(v);
   } catch (err) {
@@ -292,8 +372,9 @@ function show(v) {
   if ($('#key')) $('#key').value = ''; // the key is not left on screen once the vault is open
   go(list[0].path);
 }
-function go(path) {
-  // Pages render in the frame; any other file (a PDF, an image) is handed to the browser from memory, never fetched.
+async function go(path) {
+  // Pages render in the frame; any other file (a PDF, an image) is handed to the browser from memory.
+  await ensure(current.files, path).catch((err) => status(err.message || String(err), true));
   if (!/\.html?$/i.test(path)) {
     const f = current.files.get(path); if (!f) return;
     const url = URL.createObjectURL(new Blob([f.bytes], { type: typeOf(path, f) }));
@@ -325,6 +406,17 @@ async function openZip(buf, keyInput, zip) {
     show(v); refreshLocal();
   } catch (err) { status(err.message || String(err), true); }
 }
+async function openPublished(keyInput) {
+  status('Opening the vault in this browser...'); loading(true);
+  try {
+    const keyHex = readKeyHex(keyInput);
+    const v = await openStatic(GATE_STATIC, GATE_VAULT, keyHex);
+    v.name = await named(v);
+    v.savedId = await saveKey(v, keyHex, GATE_SRC, null).catch(() => null);
+    status(v.savedId ? `Opened ${v.name}. Its key is kept on this device, encrypted, until you forget it.` : `Opened ${v.name}.`);
+    show(v); refreshLocal();
+  } catch (err) { status(err.message || String(err), true); }
+}
 async function refreshLocal() {
   const ul = $('#local'); if (!ul) return;
   const all = (await listSaved()).sort((a, b) => b.opened - a.opened);
@@ -344,13 +436,14 @@ async function fromFragment() {
   const h = location.hash.slice(1);
   if (!h) {
     // A gated page opens its vault at once when this browser has its key saved.
-    const rec = GATE_ZIP ? await getSaved(SCOPE + '|' + GATE_ZIP) : null;
-    if (rec) openSaved(rec); else { loading(false); if (GATE_ZIP) flag(false); }
+    const rec = GATE_SRC ? await getSaved(SCOPE + '|' + GATE_SRC) : null;
+    if (rec) openSaved(rec); else { loading(false); if (GATE_SRC) flag(false); }
     return;
   }
   history.replaceState(null, '', location.pathname + location.search); // the key leaves the address bar
   const q = new URLSearchParams(h), key = q.get('key'), zip = q.get('zip') || GATE_ZIP;
   if (key) $('#key').value = key;
+  if (GATE_STATIC && !q.get('zip')) { loading(true); openPublished(key); return; }
   if (!zip) { loading(false); status('Key received. Now choose or drop the vault zip.'); return; }
   loading(true);
   if (zip !== GATE_ZIP && !/^(examples|private)\/[a-z0-9-]+\.zip$/.test(zip)) { status('Only zips published on this site can be opened from a link.', true); return; }
@@ -427,7 +520,7 @@ function init() {
     const v = $('#key').value.trim();
     if (!v) { status('Paste a vault link or a read key first.', true); return; }
     if (!useLink(v)) {
-      try { readKeyHex(v); if (GATE_ZIP) location.hash = 'key=' + encodeURIComponent(v); else status('Key ready. Now choose or drop the vault zip.'); }
+      try { readKeyHex(v); if (GATE_SRC) location.hash = 'key=' + encodeURIComponent(v); else status('Key ready. Now choose or drop the vault zip.'); }
       catch (err) { status(err.message, true); }
     }
   };
