@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-vault-zip="private/e58d8e08888c0567.zip">
+<html lang="en-GB" data-vault-zip="private/e58d8e08888c0567.zip">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -24,44 +24,100 @@
 <meta name="twitter:image:alt" content="Sotavento Invest: private preview">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-src 'self' about: data:; connect-src 'self'; object-src 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="dark">
 <script>try { if (/key=/.test(location.hash) || localStorage.getItem('sv-saved:' + location.pathname)) document.documentElement.classList.add('loading'); } catch (e) {}</script>
-<!-- A gated holding page (SovereignWebsite__Vault docs/gated-site.md). The site's agent gives it the site's own design and sets data-vault-zip once the vault is sealed. -->
+<!-- A gated holding page (SovereignWebsite__Vault docs/gated-site.md), in Sotavento's navy and gold. It shows nothing of the private site. -->
 <style>
-:root{--bg:#f7f3ec;--fg:#133451;--muted:#55626f;--accent:#133451;--gold:#8a6420;--line:#e4ddd0;--card:#ffffff;--bad:#a3261b}
-@media (prefers-color-scheme:dark){:root{--bg:#0c2236;--fg:#e8edf2;--muted:#a3b1bf;--accent:#cd9f50;--gold:#cd9f50;--line:#22384d;--card:#0f1d2b;--bad:#ff8a7a}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:18px/1.6 system-ui,"Segoe UI",-apple-system,"Helvetica Neue",Arial,sans-serif}
-main{max-width:40rem;margin:0 auto;padding:12vh 1rem 4rem;text-align:center}
-.mark{font:600 .8rem/1 system-ui,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
-h1{font-size:clamp(2.2rem,7vw,3.6rem);line-height:1.05;margin:.6rem 0 1rem}p{color:var(--muted)}
-.box{margin:2rem auto 0;padding:1.4rem;border:2px dashed var(--line);border-radius:12px;background:var(--card);text-align:left;font-family:system-ui,sans-serif}
-.box p{margin:0 0 .8rem;font-size:.95rem}.row{display:flex;gap:.5rem}.row input{flex:1;min-width:0}
-input[type=text]{font:inherit;font-size:.85rem;padding:.5rem;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
-button{font:inherit;font-size:.95rem;padding:.35rem .9rem;border:1px solid var(--accent);border-radius:6px;background:var(--accent);color:var(--bg);cursor:pointer}
-button.quiet,#tabs button[aria-pressed=false]{background:transparent;color:var(--accent)}label.pick{color:var(--accent);text-decoration:underline;cursor:pointer}
-#status{min-height:1.5em;font-size:.9rem;margin-top:.6rem}#status.bad{color:var(--bad)}
-footer{margin-top:3rem;font:.8rem system-ui,sans-serif;color:var(--muted)}a{color:var(--accent)}
+:root{--bg:#0a1a2a;--bg2:#0f2438;--fg:#eef3f7;--muted:#b3c1ce;--gold:#cd9f50;--gold2:#e7c88d;--line:rgba(231,200,141,.28);--card:rgba(10,26,42,.78);--bad:#ff9a8a;--accent:#cd9f50}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;min-height:100vh;color:var(--fg);font:17px/1.6 system-ui,"Segoe UI",-apple-system,"Helvetica Neue",Arial,sans-serif;background:var(--bg)}
+body:before{content:"";position:fixed;inset:0;background:linear-gradient(90deg,rgba(10,26,42,.96) 0%,rgba(10,26,42,.86) 42%,rgba(10,26,42,.35) 100%),url(assets/sea.jpg) 70% center/cover no-repeat;pointer-events:none}
+@media (max-width:880px){body:before{background:linear-gradient(180deg,rgba(10,26,42,.9),rgba(10,26,42,.75)),url(assets/sea.jpg) 75% center/cover no-repeat}}
+a{color:var(--gold2);text-underline-offset:.18em}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+main{position:relative;width:min(1120px,100% - 32px);margin:0 auto;min-height:100vh;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:56px;align-items:center;padding:56px 0 40px}
+@media (max-width:880px){main{grid-template-columns:minmax(0,1fr);gap:32px;padding-top:36px}}
+.mark{display:flex;align-items:center;gap:12px;font:700 .78rem/1 system-ui,sans-serif;letter-spacing:.26em;text-transform:uppercase;color:var(--gold)}
+.mark svg{width:42px;height:22px}
+h1{font-size:clamp(2.6rem,7vw,4.6rem);line-height:1.02;margin:.5em 0 .35em;letter-spacing:-.015em}
+.lede{color:var(--muted);font-size:1.12rem;max-width:34ch;margin:0}
+.steps{list-style:none;margin:30px 0 0;padding:0;display:grid;gap:14px;counter-reset:s;max-width:30rem}
+.steps li{display:grid;grid-template-columns:34px 1fr;gap:14px;align-items:start;counter-increment:s;color:var(--muted);font-size:.98rem}
+.steps li:before{content:counter(s);display:grid;place-items:center;width:34px;height:34px;border-radius:50%;border:1.5px solid var(--gold);color:var(--gold2);font-weight:700;font-size:.9rem}
+.steps b{color:var(--fg);display:block}
+.card{min-width:0;background:var(--card);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:22px;padding:26px;box-shadow:0 30px 80px -40px #000}
+.drop{display:grid;grid-template-columns:132px 1fr;gap:20px;align-items:center;padding:18px;border:1.5px dashed rgba(231,200,141,.45);border-radius:16px;cursor:pointer;transition:background .2s,border-color .2s}
+.drop:hover{background:rgba(205,159,80,.08);border-color:var(--gold)}
+@media (max-width:420px){.drop{grid-template-columns:84px minmax(0,1fr);gap:12px;padding:12px}.card{padding:18px}.row{flex-wrap:wrap}.row button{flex:1 0 100%}}
+.qr{position:relative;width:100%;aspect-ratio:1;border-radius:12px;background:#f7f3ec;padding:10px;overflow:hidden}
+.qr svg{display:block;width:100%;height:100%}
+.qr .ex{position:absolute;left:-26px;right:-26px;top:44%;transform:rotate(-14deg);background:var(--gold);color:var(--bg);font:800 .62rem/1.9 system-ui,sans-serif;letter-spacing:.22em;text-align:center;text-transform:uppercase}
+.drop b{display:block;font-size:1.08rem}
+.drop span{color:var(--muted);font-size:.92rem}
+.or{display:flex;align-items:center;gap:12px;margin:20px 0 14px;color:var(--muted);font-size:.78rem;letter-spacing:.2em;text-transform:uppercase}
+.or:before,.or:after{content:"";flex:1;height:1px;background:var(--line)}
+label.lbl{display:block;font-weight:600;margin-bottom:8px}
+.row{display:flex;gap:8px}
+.row input{flex:1;min-width:0}
+input[type=text]{font:inherit;font-size:.92rem;padding:.75rem .9rem;border:1px solid rgba(231,200,141,.4);border-radius:12px;background:rgba(255,255,255,.06);color:var(--fg)}
+input[type=text]::placeholder{color:#93a3b2}
+input[type=text]:focus{border-color:var(--gold);outline:none;box-shadow:0 0 0 3px rgba(205,159,80,.3)}
+button{font:inherit;font-weight:700;font-size:.95rem;padding:.7rem 1.2rem;border:0;border-radius:12px;background:var(--gold);color:var(--bg);cursor:pointer}
+button:hover{background:var(--gold2)}
+.example{margin-top:14px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:.86rem;color:var(--muted)}
+.example b{color:var(--fg);font-weight:600}
+.example code{display:block;margin-top:6px;font:.8rem/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--gold2);overflow-wrap:anywhere}
+.example code i{font-style:normal;color:#93a3b2}
+#status{min-height:0;font-size:.92rem;margin-top:10px;color:var(--muted)}#status.bad{color:var(--bad)}
+.trust{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line);font-size:.8rem;color:var(--muted)}
+.trust span:before{content:"\2713";color:var(--gold);margin-right:6px;font-weight:700}
+footer{grid-column:1/-1;font-size:.8rem;color:var(--muted);text-align:center;margin-top:8px}
+/* the viewer, the opening screen and the drop overlay (used by open.js) */
 #viewer{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg);z-index:9}#viewer[hidden]{display:none}body.viewing{overflow:hidden}
-.bar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;padding:.5rem 1rem;border-bottom:1px solid var(--line);font:.9rem system-ui,sans-serif}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem 1rem;padding:.5rem 1rem;border-bottom:1px solid var(--line);font:.9rem system-ui,sans-serif;background:var(--bg2)}
 .bar .meta{color:var(--muted);font-size:.8rem}#tabs{display:flex;gap:.4rem;flex-wrap:wrap}.bar .grow{flex:1}#frame{flex:1;border:0;width:100%;background:#fff}
-#loading,#dropping{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:1rem;background:var(--bg);z-index:8;text-align:center;padding:1rem;font-family:system-ui,sans-serif}
+.bar button{padding:.35rem .8rem;font-size:.85rem;border-radius:8px}
+button.quiet,#tabs button[aria-pressed=false]{background:transparent;color:var(--gold2);box-shadow:inset 0 0 0 1px var(--line)}
+#loading,#dropping{position:fixed;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:1rem;background:var(--bg);z-index:8;text-align:center;padding:1rem}
 .loading #loading{display:flex}.loading main{visibility:hidden}
-.spin{width:2.4rem;height:2.4rem;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin .9s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}@media (prefers-reduced-motion:reduce){.spin{animation:none}}
-#dropping{z-index:10;border:4px dashed var(--accent)}.dropping #dropping{display:flex}#dropping p,#loading p{font-size:1.2rem;color:var(--fg);margin:0}
+.spin{width:2.6rem;height:2.6rem;border:3px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}.drop{transition:none}}
+#dropping{z-index:10;border:4px dashed var(--gold)}.dropping #dropping{display:flex}#dropping p,#loading p{font-size:1.2rem;color:var(--fg);margin:0}
 </style>
 </head>
 <body>
 <main>
-<div class="mark">Private preview</div>
-<h1>Sotavento Invest</h1>
-<p>A private preview. Scan, paste or drop the QR code you were given to open it.</p>
-<div class="box">
-  <p><strong>Have the QR code?</strong> Drop the image anywhere on this page, <label class="pick" for="file">choose it</label>, or paste its link or key below.</p>
-  <input id="file" type="file" accept="image/*,.zip,application/zip" hidden>
-  <div class="row"><input id="key" type="text" autocomplete="off" spellcheck="false" aria-label="Link or key" placeholder="Paste the link or key"><button id="open" type="button">Open</button></div>
-  <div id="status" role="status" aria-live="polite"></div>
-</div>
-<footer>sotavento.invest.sovereignweb.site. The site is sealed in an encrypted sgit vault and opens only in your browser, with its key; nothing is uploaded. Made with <a href="https://vault.sovereignwebsite.site/">vault.sovereignwebsite.site</a>.</footer>
+  <section>
+    <div class="mark"><svg viewBox="0 0 40 20" aria-hidden="true"><path d="M2 14c6 0 6-8 12-8s6 8 12 8 6-8 12-8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>Private preview</div>
+    <h1>Sotavento Invest</h1>
+    <p class="lede">A private preview. Scan, paste or drop the QR code you were given to open it.</p>
+    <ol class="steps">
+      <li><span><b>Use the QR code you were sent</b>Scan it with your phone camera, or bring the image or its link here.</span></li>
+      <li><span><b>Your browser opens the site</b>It is decrypted on this device. Nothing is uploaded.</span></li>
+      <li><span><b>Next time, it opens by itself</b>The key is kept, encrypted, on this device only, until you choose to forget it.</span></li>
+    </ol>
+  </section>
+
+  <section class="card" aria-label="Open the private preview">
+    <label class="drop" for="file">
+      <span class="qr" aria-hidden="true"><svg viewBox="-2 -2 29 29" shape-rendering="crispEdges"><path fill="#0a1a2a" d="M0 0h1v1h-1zM0 1h1v1h-1zM0 2h1v1h-1zM0 3h1v1h-1zM0 4h1v1h-1zM0 5h1v1h-1zM0 6h1v1h-1zM0 8h1v1h-1zM0 9h1v1h-1zM0 11h1v1h-1zM0 13h1v1h-1zM0 14h1v1h-1zM0 16h1v1h-1zM0 18h1v1h-1zM0 19h1v1h-1zM0 20h1v1h-1zM0 21h1v1h-1zM0 22h1v1h-1zM0 23h1v1h-1zM0 24h1v1h-1zM1 0h1v1h-1zM1 6h1v1h-1zM1 8h1v1h-1zM1 9h1v1h-1zM1 10h1v1h-1zM1 11h1v1h-1zM1 13h1v1h-1zM1 14h1v1h-1zM1 18h1v1h-1zM1 24h1v1h-1zM2 0h1v1h-1zM2 2h1v1h-1zM2 3h1v1h-1zM2 4h1v1h-1zM2 6h1v1h-1zM2 9h1v1h-1zM2 11h1v1h-1zM2 13h1v1h-1zM2 14h1v1h-1zM2 15h1v1h-1zM2 16h1v1h-1zM2 18h1v1h-1zM2 20h1v1h-1zM2 21h1v1h-1zM2 22h1v1h-1zM2 24h1v1h-1zM3 0h1v1h-1zM3 2h1v1h-1zM3 3h1v1h-1zM3 4h1v1h-1zM3 6h1v1h-1zM3 9h1v1h-1zM3 12h1v1h-1zM3 14h1v1h-1zM3 15h1v1h-1zM3 16h1v1h-1zM3 18h1v1h-1zM3 20h1v1h-1zM3 21h1v1h-1zM3 22h1v1h-1zM3 24h1v1h-1zM4 0h1v1h-1zM4 2h1v1h-1zM4 3h1v1h-1zM4 4h1v1h-1zM4 6h1v1h-1zM4 9h1v1h-1zM4 10h1v1h-1zM4 12h1v1h-1zM4 13h1v1h-1zM4 16h1v1h-1zM4 18h1v1h-1zM4 20h1v1h-1zM4 21h1v1h-1zM4 22h1v1h-1zM4 24h1v1h-1zM5 0h1v1h-1zM5 6h1v1h-1zM5 12h1v1h-1zM5 14h1v1h-1zM5 15h1v1h-1zM5 18h1v1h-1zM5 24h1v1h-1zM6 0h1v1h-1zM6 1h1v1h-1zM6 2h1v1h-1zM6 3h1v1h-1zM6 4h1v1h-1zM6 5h1v1h-1zM6 6h1v1h-1zM6 8h1v1h-1zM6 10h1v1h-1zM6 15h1v1h-1zM6 18h1v1h-1zM6 19h1v1h-1zM6 20h1v1h-1zM6 21h1v1h-1zM6 22h1v1h-1zM6 23h1v1h-1zM6 24h1v1h-1zM7 10h1v1h-1zM7 15h1v1h-1zM8 3h1v1h-1zM8 4h1v1h-1zM8 6h1v1h-1zM8 7h1v1h-1zM8 8h1v1h-1zM8 9h1v1h-1zM8 10h1v1h-1zM8 12h1v1h-1zM8 13h1v1h-1zM8 14h1v1h-1zM8 16h1v1h-1zM8 17h1v1h-1zM8 22h1v1h-1zM8 23h1v1h-1zM8 24h1v1h-1zM9 2h1v1h-1zM9 3h1v1h-1zM9 4h1v1h-1zM9 5h1v1h-1zM9 8h1v1h-1zM9 9h1v1h-1zM9 10h1v1h-1zM9 11h1v1h-1zM9 18h1v1h-1zM9 23h1v1h-1zM9 24h1v1h-1zM10 0h1v1h-1zM10 2h1v1h-1zM10 3h1v1h-1zM10 4h1v1h-1zM10 5h1v1h-1zM10 6h1v1h-1zM10 7h1v1h-1zM10 8h1v1h-1zM10 9h1v1h-1zM10 10h1v1h-1zM10 11h1v1h-1zM10 12h1v1h-1zM10 15h1v1h-1zM10 16h1v1h-1zM10 17h1v1h-1zM10 18h1v1h-1zM10 19h1v1h-1zM10 22h1v1h-1zM10 24h1v1h-1zM11 0h1v1h-1zM11 1h1v1h-1zM11 2h1v1h-1zM11 4h1v1h-1zM11 5h1v1h-1zM11 8h1v1h-1zM11 10h1v1h-1zM11 15h1v1h-1zM11 16h1v1h-1zM11 17h1v1h-1zM11 21h1v1h-1zM11 22h1v1h-1zM12 4h1v1h-1zM12 6h1v1h-1zM12 7h1v1h-1zM12 8h1v1h-1zM12 9h1v1h-1zM12 10h1v1h-1zM12 13h1v1h-1zM12 17h1v1h-1zM12 18h1v1h-1zM12 19h1v1h-1zM12 20h1v1h-1zM12 21h1v1h-1zM13 3h1v1h-1zM13 9h1v1h-1zM13 11h1v1h-1zM13 14h1v1h-1zM13 15h1v1h-1zM13 18h1v1h-1zM13 19h1v1h-1zM13 20h1v1h-1zM13 23h1v1h-1zM14 2h1v1h-1zM14 4h1v1h-1zM14 5h1v1h-1zM14 10h1v1h-1zM14 13h1v1h-1zM14 14h1v1h-1zM14 15h1v1h-1zM14 16h1v1h-1zM14 18h1v1h-1zM14 19h1v1h-1zM14 20h1v1h-1zM14 22h1v1h-1zM14 23h1v1h-1zM15 1h1v1h-1zM15 6h1v1h-1zM15 7h1v1h-1zM15 8h1v1h-1zM15 9h1v1h-1zM15 11h1v1h-1zM15 15h1v1h-1zM15 19h1v1h-1zM15 21h1v1h-1zM15 22h1v1h-1zM16 3h1v1h-1zM16 8h1v1h-1zM16 15h1v1h-1zM16 16h1v1h-1zM16 17h1v1h-1zM16 18h1v1h-1zM16 19h1v1h-1zM16 20h1v1h-1zM16 21h1v1h-1zM16 22h1v1h-1zM16 23h1v1h-1zM16 24h1v1h-1zM17 11h1v1h-1zM17 14h1v1h-1zM17 16h1v1h-1zM17 20h1v1h-1zM17 23h1v1h-1zM17 24h1v1h-1zM18 0h1v1h-1zM18 1h1v1h-1zM18 2h1v1h-1zM18 3h1v1h-1zM18 4h1v1h-1zM18 5h1v1h-1zM18 6h1v1h-1zM18 9h1v1h-1zM18 10h1v1h-1zM18 11h1v1h-1zM18 13h1v1h-1zM18 15h1v1h-1zM18 16h1v1h-1zM18 18h1v1h-1zM18 20h1v1h-1zM18 24h1v1h-1zM19 0h1v1h-1zM19 6h1v1h-1zM19 8h1v1h-1zM19 9h1v1h-1zM19 11h1v1h-1zM19 12h1v1h-1zM19 13h1v1h-1zM19 16h1v1h-1zM19 20h1v1h-1zM19 21h1v1h-1zM19 22h1v1h-1zM19 24h1v1h-1zM20 0h1v1h-1zM20 2h1v1h-1zM20 3h1v1h-1zM20 4h1v1h-1zM20 6h1v1h-1zM20 8h1v1h-1zM20 12h1v1h-1zM20 14h1v1h-1zM20 16h1v1h-1zM20 17h1v1h-1zM20 18h1v1h-1zM20 19h1v1h-1zM20 20h1v1h-1zM20 21h1v1h-1zM20 23h1v1h-1zM20 24h1v1h-1zM21 0h1v1h-1zM21 2h1v1h-1zM21 3h1v1h-1zM21 4h1v1h-1zM21 6h1v1h-1zM21 8h1v1h-1zM21 9h1v1h-1zM21 10h1v1h-1zM21 11h1v1h-1zM21 12h1v1h-1zM21 14h1v1h-1zM21 16h1v1h-1zM21 17h1v1h-1zM21 18h1v1h-1zM21 19h1v1h-1zM21 20h1v1h-1zM21 23h1v1h-1zM22 0h1v1h-1zM22 2h1v1h-1zM22 3h1v1h-1zM22 4h1v1h-1zM22 6h1v1h-1zM22 9h1v1h-1zM22 11h1v1h-1zM22 14h1v1h-1zM22 18h1v1h-1zM22 22h1v1h-1zM22 23h1v1h-1zM22 24h1v1h-1zM23 0h1v1h-1zM23 6h1v1h-1zM23 8h1v1h-1zM23 9h1v1h-1zM23 11h1v1h-1zM23 12h1v1h-1zM23 13h1v1h-1zM23 17h1v1h-1zM23 18h1v1h-1zM23 19h1v1h-1zM23 20h1v1h-1zM23 21h1v1h-1zM23 22h1v1h-1zM23 23h1v1h-1zM24 0h1v1h-1zM24 1h1v1h-1zM24 2h1v1h-1zM24 3h1v1h-1zM24 4h1v1h-1zM24 5h1v1h-1zM24 6h1v1h-1zM24 10h1v1h-1zM24 12h1v1h-1zM24 13h1v1h-1zM24 14h1v1h-1zM24 15h1v1h-1zM24 18h1v1h-1zM24 20h1v1h-1zM24 21h1v1h-1zM24 22h1v1h-1zM24 23h1v1h-1zM24 24h1v1h-1z"/></svg><span class="ex">Example</span></span>
+      <span><b>Drop your QR code here</b><span>or click to choose the image. You can also drop it anywhere on this page.</span></span>
+    </label>
+    <input id="file" type="file" accept="image/*,.zip,application/zip" hidden>
+
+    <div class="or" aria-hidden="true">or paste it</div>
+    <label class="lbl" for="key">Link or key</label>
+    <div class="row"><input id="key" type="text" autocomplete="off" spellcheck="false" placeholder="https://sotavento.invest.sovereignweb.site/#key=..."><button id="open" type="button">Open</button></div>
+    <div class="example"><b>What to paste.</b> The link inside your QR code, which looks like:
+      <code>https://sotavento.invest.sovereignweb.site/#key=sgit_private_read_<i>&middot;&middot;&middot; 64 letters and digits &middot;&middot;&middot;</i></code>
+      or just the key on its own, starting <code style="display:inline">sgit_private_read_</code>.</div>
+    <div id="status" role="status" aria-live="polite"></div>
+    <div class="trust"><span>Opens only in your browser</span><span>No cookies, no tracking</span><span>Encrypted with AES-256-GCM</span></div>
+  </section>
+
+  <footer>sotavento.invest.sovereignweb.site &middot; a private draft prepared by Sovereign Website, sealed in an encrypted sgit vault. Made with <a href="https://vault.sovereignwebsite.site/">vault.sovereignwebsite.site</a>.</footer>
 </main>
 <div id="loading" role="status" aria-live="polite"><div class="spin" aria-hidden="true"></div><p id="loading-msg">Opening the vault...</p></div>
 <div id="dropping" aria-hidden="true"><p>Drop the QR code image to open the site</p></div>
